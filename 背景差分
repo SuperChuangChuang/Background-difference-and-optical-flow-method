@@ -1,0 +1,41 @@
+import os
+import cv2
+import numpy as np
+
+src=r'03001'
+des=r"chafen_03001"
+file_list=os.listdir(src)
+print(file_list)
+
+
+
+
+
+
+for file in file_list:
+    # 选取第一帧作为背景图
+    background_img = cv2.imread('D:\Software\pycharm\chafen/03001/120107-265.jpg',-1).astype(np.int16)
+    # 对背景图高斯滤波
+    background_img_blur = cv2.GaussianBlur(background_img, (7, 7), 0)
+    path=os.path.join(src,file)
+    # 读取前景图片
+    front_image = cv2.imread(path,-1).astype(np.int16)
+    # 对前景图高斯滤波
+    front_image_blur = cv2.GaussianBlur(front_image, (3, 3), 0)
+    # 图像差分
+    differ_image = cv2.absdiff(front_image_blur,background_img_blur)
+    # # 二值化处理，用OTSU自动寻找阈值，th2为返回的图像
+    # ret2, differ_image = cv2.threshold(differ_image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    # # #
+    #把灰度值归一化到0~255
+    differ_image = cv2.normalize(differ_image, None, 0, 255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8UC3)
+    #形态操作
+    kernel = np.ones((1, 1), np.uint8)
+    differ_image = cv2.morphologyEx(differ_image, cv2.MORPH_OPEN, kernel)
+
+
+    # 写入新的文件夹
+    try:
+        cv2.imwrite(os.path.join(des,file),differ_image)
+    except Exception as e:
+        continue
